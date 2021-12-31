@@ -1,14 +1,6 @@
 -- chomping.db sqlite3 database schema
 PRAGMA foreign_keys = ON;
 
--- source table contains list of recipe contributors or sources
-CREATE TABLE source (
-id INTEGER UNIQUE PRIMARY KEY NOT NULL,
-name TEXT NOT NULL,
-
-UNIQUE (name)
-);
-
 
 -- contributor table contains recipe reviewers and data contributors
 CREATE TABLE contributor (
@@ -19,23 +11,23 @@ UNIQUE (name)
 );
 
 
--- family table contains families of recipes
-CREATE TABLE family (
+-- method table contains families of recipes
+CREATE TABLE method (
 id INTEGER UNIQUE PRIMARY KEY NOT NULL,
-family TEXT NOT NULL,
-method TEXT,
+method TEXT NOT NULL,
 gear TEXT,
 
-UNIQUE (family)
+UNIQUE (method)
 );
 
 
 -- category table contains food categories for recipes
 CREATE TABLE category (
 id INTEGER UNIQUE PRIMARY KEY NOT NULL,
-category TEXT NOT NULL,
+nationality TEXT,
+type TEXT,
 
-UNIQUE (category)
+UNIQUE (nationality, type)
 );
 
 
@@ -43,17 +35,13 @@ UNIQUE (category)
 CREATE TABLE dish (
 id INTEGER UNIQUE PRIMARY KEY NOT NULL,
 name TEXT NOT NULL,
-source_id INTEGER,
 contributor_id INTEGER,
 category_id INTEGER,
-family_id INTEGER,
+method_id INTEGER,
 image TEXT,
+recipe_route TEXT,
 
-UNIQUE (name, source_id),
-
-FOREIGN KEY (source_id) REFERENCES source (id)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE,
+UNIQUE (recipe_route),
 
 FOREIGN KEY (contributor_id) REFERENCES contributor (id)
     ON DELETE RESTRICT
@@ -63,7 +51,7 @@ FOREIGN KEY (category_id) REFERENCES category (id)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
 
-FOREIGN KEY (family_id) REFERENCES family (id)
+FOREIGN KEY (method_id) REFERENCES method (id)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
 );
@@ -90,7 +78,6 @@ FOREIGN KEY (dish_id) REFERENCES dish (id)
 CREATE TABLE recipe (
 id INTEGER UNIQUE PRIMARY KEY NOT NULL,
 dish_id INTEGER NOT NULL,
-route TEXT NOT NULL,
 step INTEGER NOT NULL,
 direction TEXT NOT NULL,
 image TEXT,
