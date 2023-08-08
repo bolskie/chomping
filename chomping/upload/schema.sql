@@ -1,7 +1,7 @@
 -- chomping.db sqlite3 database schema
 PRAGMA foreign_keys = ON;
 
--- contributor table contains recipe reviewers and data contributors
+-- recipe contributors
 CREATE TABLE contributor (
 id INTEGER UNIQUE PRIMARY KEY NOT NULL,
 name TEXT NOT NULL,
@@ -9,7 +9,7 @@ name TEXT NOT NULL,
 UNIQUE (name)
 );
 
--- method table contains families of recipes
+-- families of recipes to sort by gear
 CREATE TABLE method (
 id INTEGER UNIQUE PRIMARY KEY NOT NULL,
 method TEXT NOT NULL,
@@ -17,7 +17,7 @@ method TEXT NOT NULL,
 UNIQUE (method)
 );
 
--- dish table contains list of dishes, categories, and key words
+-- list of dishes/meals
 CREATE TABLE dish (
 id INTEGER UNIQUE PRIMARY KEY NOT NULL,
 name TEXT NOT NULL,
@@ -37,23 +37,18 @@ FOREIGN KEY (method_id) REFERENCES method (id)
     ON UPDATE CASCADE
 );
 
--- ingredients table contains list of ingredients for shopping list
+-- list of ingredients for recipe display and shopping list
 CREATE TABLE ingredient (
 id INTEGER UNIQUE PRIMARY KEY NOT NULL,
-dish_id INTEGER NOT NULL,
 quantity REAL,
 unit TEXT,
 name TEXT NOT NULL,
 notes TEXT,
 
-UNIQUE (dish_id, name)
-
-FOREIGN KEY (dish_id) REFERENCES dish (id)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE
+UNIQUE (quantity, unit, name)
 );
 
--- recipe table contains steps to cook dish
+-- steps to cook dish
 CREATE TABLE recipe (
 id INTEGER UNIQUE PRIMARY KEY NOT NULL,
 dish_id INTEGER NOT NULL,
@@ -64,6 +59,24 @@ image TEXT,
 UNIQUE (dish_id, step),
 
 FOREIGN KEY (dish_id) REFERENCES dish (id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE
+);
+
+-- intermediary table to link recipe steps to ingredients
+CREATE TABLE int_ingredient_recipe_step (
+id INTEGER UNIQUE PRIMARY KEY NOT NULL,
+recipe_id INTEGER NOT NULL,
+ingredient_id iNTEGER NOT NULL,
+string_position INTEGER,
+
+UNIQUE (recipe_id, ingredient_id),
+
+FOREIGN KEY (recipe_id) REFERENCES recipe (id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+FOREIGN KEY (ingredient_id) REFERENCES ingredient (id)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
 );
