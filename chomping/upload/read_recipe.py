@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""read_recipe.py: read recipe from json format into memory"""
+"""read_recipe.py: read and parse recipe from json format into memory"""
 
 __author__ = "bolskie"
 __copyright__ = "copyright 2023, Jack Briskie"
@@ -13,7 +13,7 @@ from typing import Union
 def read_recipe_file(recipe_name: str) -> dict:
     """read recipe from json file format to dictionary.
 
-    :param recipe_name: file name of json recipe, input version 0.01
+    :param recipe_name: file name of json recipe
     :returns: dictionary of recipe data
     """
     # determine path to recipe data
@@ -40,11 +40,11 @@ def read_recipe_steps(recipe_data: dict) -> list:
     return recipe_steps
 
 
-def get_ingredient_data(recipe_step: str) -> Union[list[tuple, ...], None]:
-    """read one or more ingredients and quantities from a recipe step.
+def find_ingredient_data(recipe_step: str) -> Union[list[tuple, ...], None]:
+    """find index locations of ingredients and quantities from a recipe step.
 
     :param recipe_step: single value of recipe steps list output from read_recipe_steps
-    :returns: recipe value data stored as a nested tuple of tuples
+    :returns: index of ingredient locations as a nested list of tuples
     """
     # initialize loop indices and lists to store ingredient indices
     string_start_idx = 0
@@ -66,41 +66,53 @@ def get_ingredient_data(recipe_step: str) -> Union[list[tuple, ...], None]:
         ingredient_stop_idx.append(each_ingredient_stop_idx)
         string_start_idx = each_ingredient_stop_idx  # set next search from ending index of this ingredient
 
-    # read and format ingredient data from found string indices
-    ingredient_idx, ingredient_tuples = 0, []  # initialize loop index and storage list
-    print(ingredient_start_idx, ingredient_stop_idx)
+    # return results as list of tuples if they exist
     if ingredient_start_idx:
-        # select ingredient data
-        while ingredient_idx < len(ingredient_start_idx):
-            ingredient_data_idx = 0
-            # slice recipe list from found bracket indices
-            select_ingredient_data = recipe_step[ingredient_start_idx[ingredient_idx] + 1: ingredient_stop_idx[ingredient_idx]]
-
-            # find indices of semicolon characters
-            first_semicolon_idx = select_ingredient_data.index(";")
-            second_semicolon_index = first_semicolon_idx + select_ingredient_data[first_semicolon_idx + 1:].index(";") + 1
-
-            # select and format data separated by indices
-            select_quantity = float(select_ingredient_data[ingredient_data_idx: first_semicolon_idx])
-            select_unit = str(select_ingredient_data[first_semicolon_idx + 1: second_semicolon_index])
-            select_ingredient_name = str(select_ingredient_data[second_semicolon_index + 1:])
-
-            # append data to output list and iterate loop
-            data_tuple = (select_quantity, select_unit, select_ingredient_name)
-            print(data_tuple)
-            ingredient_tuples.append(data_tuple)
-            ingredient_idx += 1
-
-    # if no ingredients are found in the string search, return None
+        output_idx = list(zip(ingredient_start_idx, ingredient_stop_idx))
     else:
-        ingredient_tuples = None
+        output_idx = None
+
+    return output_idx
+
+
+def get_ingredient_data(
+    recipe_step: str, ingredient_bracket_indices: list[tuple, ...]
+) -> list[tuple, ...]:
+    """read one or more sets of ingredient and quantity data from a recipe step based on input index.
+
+    :param recipe_step: single value of recipe steps list output from read_recipe_steps
+    :param ingredient_bracket_indices: list of (start, stop) indices of ingredient location in string
+    :returns: recipe value data stored as a nested list of tuples
+    """
+    ingredient_idx, ingredient_tuples = 0, []  # initialize loop index and storage list
+    # select ingredient data from string based on index location
+    while ingredient_idx < len(ingredient_bracket_indices):
+        # slice recipe list from found bracket indices
+        select_ingredient_data = recipe_step[
+            ingredient_bracket_indices[ingredient_idx][0]
+            + 1 : ingredient_bracket_indices[ingredient_idx][1]
+        ]
+
+        # find indices of semicolon characters
+        first_semicolon_idx = select_ingredient_data.index(";")
+        second_semicolon_index = (
+            first_semicolon_idx
+            + select_ingredient_data[first_semicolon_idx + 1 :].index(";")
+            + 1
+        )
+
+        # select and format data separated by semicolons
+        select_quantity = float(select_ingredient_data[0:first_semicolon_idx])
+        select_unit = str(
+            select_ingredient_data[first_semicolon_idx + 1 : second_semicolon_index]
+        )
+        select_ingredient_name = str(
+            select_ingredient_data[second_semicolon_index + 1 :]
+        )
+
+        # append data to output list and iterate loop
+        data_tuple = (select_quantity, select_unit, select_ingredient_name)
+        ingredient_tuples.append(data_tuple)
+        ingredient_idx += 1
 
     return ingredient_tuples
-
-
-if __name__ == "__main__":
-    DATANAME = 'rigatoni_with_vodka_sauce'
-    read_file = read_recipe_file(DATANAME)
-    read_steps = read_recipe_steps(read_file)
-    myStepTest = read_steps[3]
-    read_ingreds = get_ingredient_data(myStepTest)
