@@ -29,6 +29,21 @@ def read_recipe_file(recipe_name: str) -> dict:
     return recipe_data
 
 
+def read_recipe_info(recipe_data: dict) -> dict:
+    """read recipe information from raw json file data.
+
+    :param recipe_data: dictionary of recipe data returned from read_recipe_file
+    :returns: dictionary of recipe information
+    """
+    # read pertinent information from input data and store to output dictionary
+    recipe_info = dict(
+        contributor=recipe_data.get("contributorName"),
+        method=recipe_data.get("cookingMethod"),
+        title=recipe_data.get("recipeTitle"),
+    )
+    return recipe_info
+
+
 def read_recipe_steps(recipe_data: dict) -> list:
     """read recipe steps and instructions from raw json file data.
 
@@ -40,7 +55,7 @@ def read_recipe_steps(recipe_data: dict) -> list:
     return recipe_steps
 
 
-def find_ingredient_data(recipe_step: str) -> Union[list[tuple, ...], None]:
+def find_ingredient_indices(recipe_step: str) -> Union[list[tuple, ...], None]:
     """find index locations of ingredients and quantities from a recipe step.
 
     :param recipe_step: single value of recipe steps list output from read_recipe_steps
