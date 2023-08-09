@@ -12,7 +12,7 @@ UNIQUE (name)
 -- families of recipes to sort by gear
 CREATE TABLE method (
 id INTEGER UNIQUE PRIMARY KEY NOT NULL,
-method TEXT NOT NULL,
+name TEXT NOT NULL,
 
 UNIQUE (method)
 );
@@ -23,8 +23,8 @@ id INTEGER UNIQUE PRIMARY KEY NOT NULL,
 name TEXT NOT NULL,
 contributor_id INTEGER NOT NULL,
 method_id INTEGER NOT NULL,
-image TEXT,
 recipe_route TEXT,
+image TEXT,
 
 UNIQUE (recipe_route),
 
@@ -43,7 +43,6 @@ id INTEGER UNIQUE PRIMARY KEY NOT NULL,
 quantity REAL,
 unit TEXT,
 name TEXT NOT NULL,
-notes TEXT,
 
 UNIQUE (quantity, unit, name)
 );
@@ -68,7 +67,7 @@ CREATE TABLE int_ingredient_recipe_step (
 id INTEGER UNIQUE PRIMARY KEY NOT NULL,
 recipe_id INTEGER NOT NULL,
 ingredient_id iNTEGER NOT NULL,
-string_position INTEGER,
+brackets_number INTEGER,
 
 UNIQUE (recipe_id, ingredient_id),
 
